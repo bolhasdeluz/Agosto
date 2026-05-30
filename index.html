@@ -597,13 +597,49 @@
   .toast.show { transform: translateX(-50%) translateY(0); }
 
   .spacer { height: 40px; }
+
+  @media print {
+    header button, .tabs, .add-btn, .gasto-del, .item-compra-del,
+    .add-item-row, .add-cat-row, #gastoModal, #exportModal, #waModal,
+    .toast, .spacer, .pgto-input { display: none !important; }
+    .pgto-input-val { display: inline !important; }
+    body { background: #fff !important; font-size: 12px; }
+    .section { display: block !important; padding: 0 !important; }
+    .pessoa-body { display: block !important; background: none !important; }
+    .cat-body { display: block !important; }
+    .pessoa-card, .cat-block, .gasto-item, .saldo-card {
+      box-shadow: none !important; border: 1px solid #ddd !important;
+      break-inside: avoid;
+    }
+    .saldo-bar { page-break-after: always; margin-bottom: 20px; }
+    .tabs + .section::before {
+      content: attr(data-print-title);
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #c4396b;
+      border-bottom: 2px solid #c4396b;
+      padding-bottom: 5px;
+      margin: 16px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🕯 Obrigação de Agosto</h1>
-  <p>Bolhas de Luz — Controle Financeiro</p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <h1>🕯 Obrigação de Agosto</h1>
+      <p>Bolhas de Luz — Controle Financeiro</p>
+    </div>
+    <button onclick="openExportModal()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);border-radius:20px;color:rgba(255,255,255,.9);font-family:'DM Sans',sans-serif;font-size:.75rem;padding:6px 13px;cursor:pointer;white-space:nowrap;margin-top:2px">
+      📤 Exportar
+    </button>
+  </div>
 </header>
 
 <!-- SALDO -->
@@ -704,6 +740,50 @@
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeGastoModal()">Cancelar</button>
       <button class="btn-save" onclick="salvarGasto()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EXPORTAR -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <h3>📤 Exportar Relatório</h3>
+    <p style="font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text-dim);margin-bottom:16px">Escolha o formato de exportação:</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-save" style="text-align:left;padding:12px 16px;display:flex;align-items:center;gap:10px" onclick="exportarPDF()">
+        <span style="font-size:1.2rem">🖨️</span>
+        <div>
+          <div style="font-size:11px;letter-spacing:.06em">PDF / IMPRIMIR</div>
+          <div style="font-size:9px;font-weight:400;opacity:.8;margin-top:2px">Relatório completo para salvar ou imprimir</div>
+        </div>
+      </button>
+      <button class="btn-save" style="text-align:left;padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--green)" onclick="exportarCSV()">
+        <span style="font-size:1.2rem">📊</span>
+        <div>
+          <div style="font-size:11px;letter-spacing:.06em">EXCEL / CSV</div>
+          <div style="font-size:9px;font-weight:400;opacity:.8;margin-top:2px">Planilha de pagamentos para editar</div>
+        </div>
+      </button>
+      <button class="btn-save" style="text-align:left;padding:12px 16px;display:flex;align-items:center;gap:10px;background:#25a244" onclick="exportarWhatsApp()">
+        <span style="font-size:1.2rem">💬</span>
+        <div>
+          <div style="font-size:11px;letter-spacing:.06em">WHATSAPP</div>
+          <div style="font-size:9px;font-weight:400;opacity:.8;margin-top:2px">Resumo formatado para copiar e enviar</div>
+        </div>
+      </button>
+    </div>
+    <button class="btn-cancel" style="width:100%;margin-top:10px" onclick="closeExportModal()">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL WHATSAPP (preview + copiar) -->
+<div class="modal-overlay" id="waModal">
+  <div class="modal" style="max-height:85vh;display:flex;flex-direction:column">
+    <h3>💬 Copiar para WhatsApp</h3>
+    <textarea id="waText" readonly style="flex:1;min-height:220px;max-height:45vh;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--text);resize:none;margin-bottom:12px;line-height:1.5"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeWaModal()">Fechar</button>
+      <button class="btn-save" onclick="copiarWA()">📋 Copiar Texto</button>
     </div>
   </div>
 </div>
@@ -1087,6 +1167,135 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── EXPORTAR ─────────────────────────────────────────────────────────────────
+function openExportModal() { document.getElementById('exportModal').classList.add('open'); }
+function closeExportModal() { document.getElementById('exportModal').classList.remove('open'); }
+function closeWaModal() { document.getElementById('waModal').classList.remove('open'); }
+
+// ── PDF via print ──
+function exportarPDF() {
+  closeExportModal();
+  // Garante que todas as seções estejam visíveis para impressão
+  setTimeout(() => window.print(), 100);
+}
+
+// ── CSV ──
+function exportarCSV() {
+  closeExportModal();
+  const linhas = [
+    ['Nome','Galos','Galinhas','Valor Aves','Obrigação Total','Obrigação Paga','Aves Pagas','Total Pago','Total Devido','Situação']
+  ];
+  pessoasInicial.forEach(p => {
+    const pg = getPago(p.nome);
+    const totalAves = calcValorAves(p);
+    const totalDeve = VALOR_OBRIGACAO + totalAves;
+    const totalPago = pg.obrigacaoPago + pg.avesPago;
+    const situacao = totalPago >= totalDeve ? 'Quitado' : totalPago > 0 ? 'Parcial' : 'Pendente';
+    linhas.push([
+      p.nome, p.galos, p.galinhas,
+      totalAves.toFixed(2),
+      VALOR_OBRIGACAO.toFixed(2),
+      pg.obrigacaoPago.toFixed(2),
+      pg.avesPago.toFixed(2),
+      totalPago.toFixed(2),
+      totalDeve.toFixed(2),
+      situacao
+    ]);
+  });
+
+  // Linha em branco + gastos
+  linhas.push([]);
+  linhas.push(['GASTOS','','','','','','','','','']);
+  linhas.push(['Descrição','Categoria','Data','Valor','','','','','','']);
+  gastos.forEach(g => {
+    linhas.push([g.desc, g.categoria, g.data || '', g.valor.toFixed(2),'','','','','','']);
+  });
+
+  const totalEntradas = pessoasInicial.reduce((s, p) => {
+    const pg = getPago(p.nome);
+    return s + pg.obrigacaoPago + pg.avesPago;
+  }, 0);
+  const totalSaidas = gastos.reduce((s, g) => s + g.valor, 0);
+  linhas.push([]);
+  linhas.push(['SALDO','','','','','','','','','']);
+  linhas.push(['Entradas','','','',totalEntradas.toFixed(2),'','','','','']);
+  linhas.push(['Saídas','','','',totalSaidas.toFixed(2),'','','','','']);
+  linhas.push(['Saldo','','','','', (totalEntradas - totalSaidas).toFixed(2),'','','','']);
+
+  const bom = '\uFEFF'; // BOM para Excel reconhecer UTF-8
+  const csv = bom + linhas.map(l => l.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'obrigacao-agosto-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV baixado!');
+}
+
+// ── WhatsApp ──
+function exportarWhatsApp() {
+  closeExportModal();
+  const hoje = new Date().toLocaleDateString('pt-BR');
+
+  let totalEntradas = 0, totalSaidas = gastos.reduce((s,g) => s + g.valor, 0);
+  pessoasInicial.forEach(p => {
+    const pg = getPago(p.nome);
+    totalEntradas += pg.obrigacaoPago + pg.avesPago;
+  });
+
+  let txt = `🕯 *OBRIGAÇÃO DE AGOSTO — BOLHAS DE LUZ*\n`;
+  txt += `📅 ${hoje}\n\n`;
+
+  txt += `💰 *SALDO*\n`;
+  txt += `▸ Entradas: ${fmtBRL(totalEntradas)}\n`;
+  txt += `▸ Saídas: ${fmtBRL(totalSaidas)}\n`;
+  txt += `▸ Saldo: *${fmtBRL(totalEntradas - totalSaidas)}*\n\n`;
+
+  txt += `👥 *PAGAMENTOS*\n`;
+  pessoasInicial.forEach(p => {
+    const pg = getPago(p.nome);
+    const totalAves = calcValorAves(p);
+    const totalDeve = VALOR_OBRIGACAO + totalAves;
+    const totalPago = pg.obrigacaoPago + pg.avesPago;
+    const icon = totalPago >= totalDeve ? '✅' : totalPago > 0 ? '🔶' : '❌';
+    txt += `${icon} ${p.nome}: ${fmtBRL(totalPago)} / ${fmtBRL(totalDeve)}`;
+    if (totalPago < totalDeve) txt += ` (falta ${fmtBRL(totalDeve - totalPago)})`;
+    txt += '\n';
+  });
+
+  if (gastos.length > 0) {
+    txt += `\n💸 *GASTOS REGISTRADOS*\n`;
+    gastos.forEach(g => {
+      txt += `▸ ${g.desc} — ${fmtBRL(g.valor)}`;
+      if (g.data) txt += ` (${g.data})`;
+      txt += '\n';
+    });
+  }
+
+  const totalOrc = categorias.reduce((s, c) => s + c.itens.reduce((ss, i) => ss + i.val, 0), 0);
+  txt += `\n📋 *ORÇAMENTO TOTAL: ${fmtBRL(totalOrc)}*\n`;
+
+  document.getElementById('waText').value = txt;
+  document.getElementById('waModal').classList.add('open');
+}
+
+function copiarWA() {
+  const t = document.getElementById('waText');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(t.value).then(() => {
+      showToast('Copiado! ✓');
+      closeWaModal();
+    });
+  } else {
+    t.select();
+    document.execCommand('copy');
+    showToast('Copiado! ✓');
+    closeWaModal();
+  }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
