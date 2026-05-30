@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obrigação de Agosto — Bolhas de Luz</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c4396b;
+    --gold-light: #e8688a;
+    --gold-dim: rgba(196,57,107,.08);
+    --bg: #fff5f7;
+    --surface: #ffffff;
+    --border: rgba(196,57,107,.15);
+    --text: #2a1a22;
+    --text-dim: rgba(80,30,50,.5);
+    --red: #b84040;
+    --red-dim: rgba(184,64,64,.08);
+    --green: #2a7a60;
+    --green-light: #3a9a78;
+    --green-dim: #e8f4f0;
+    --gold-sessao: #c8a000;
+    --gold-sessao-bg: #fffbe8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #c0405a, #d4607a 60%, #e07a90);
+    box-shadow: 0 2px 20px rgba(180,60,90,.25);
+    padding: 18px 20px 14px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .1em;
+  }
+  header p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .75rem;
+    color: rgba(255,255,255,.7);
+    margin-top: 2px;
+  }
+
+  /* SALDO GERAL */
+  .saldo-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 14px 14px 0;
+  }
+  .saldo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+    box-shadow: 0 2px 16px rgba(180,60,90,.07);
+  }
+  .saldo-card .label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .saldo-card .valor {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 3px;
+  }
+  .saldo-card.entradas .valor { color: var(--green); }
+  .saldo-card.saidas .valor { color: var(--red); }
+  .saldo-card.saldo .valor { color: var(--gold); }
+  .saldo-card.saldo { border-color: rgba(196,57,107,.3); background: var(--gold-dim); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 14px 14px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: .08em;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .2s;
+  }
+  .tab-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #fff;
+  }
+
+  /* SECTIONS */
+  .section { display: none; padding: 14px; }
+  .section.active { display: block; }
+
+  /* SECTION TITLE */
+  .sec-title {
+    font-family: 'Cinzel', serif;
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  /* PESSOAS */
+  .pessoas-list { display: flex; flex-direction: column; gap: 8px; }
+  .pessoa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(180,60,90,.07);
+  }
+  .pessoa-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    gap: 8px;
+  }
+  .pessoa-nome {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    flex: 1;
+  }
+  .pessoa-status {
+    display: flex;
+    gap: 5px;
+  }
+  .status-pill {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: .06em;
+    padding: 3px 7px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .pill-ok { background: var(--green-dim); color: var(--green); border: 1px solid #b8ddd4; }
+  .pill-pend { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(196,57,107,.25); }
+  .pill-nao { background: var(--red-dim); color: var(--red); border: 1px solid rgba(184,64,64,.2); }
+
+  .pessoa-total-mini {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .75rem;
+    font-weight: 500;
+    color: var(--green);
+    min-width: 60px;
+    text-align: right;
+  }
+  .chevron { font-size: .8rem; color: var(--text-dim); transition: transform .2s; }
+  .pessoa-card.open .chevron { transform: rotate(180deg); }
+
+  .pessoa-body {
+    display: none;
+    padding: 0 14px 12px;
+    border-top: 1px solid var(--border);
+    background: linear-gradient(135deg, #fde8ed, #fce8ef);
+  }
+  .pessoa-card.open .pessoa-body { display: block; }
+
+  .pgto-group { margin-top: 10px; }
+  .pgto-group-title {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .pgto-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .pgto-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .8rem;
+    color: var(--text-dim);
+    min-width: 80px;
+  }
+  .pgto-input {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: .9rem;
+    padding: 5px 8px;
+    width: 90px;
+    text-align: right;
+  }
+  .pgto-input:focus { outline: none; border-color: var(--gold); }
+  .pgto-check {
+    width: 18px; height: 18px;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+  .pgto-check-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .78rem;
+    color: var(--text-dim);
+  }
+  .pgto-subtotal {
+    font-family: 'Crimson Pro', serif;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--green);
+    margin-top: 3px;
+    text-align: right;
+  }
+
+  .aves-info {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .75rem;
+    color: var(--text-dim);
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(255,255,255,.6);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .aves-info span { color: var(--text); font-weight: 500; }
+
+  /* GASTOS */
+  .add-btn {
+    width: 100%;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: .08em;
+    font-weight: 700;
+    padding: 10px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: background .2s;
+  }
+  .add-btn:hover { background: var(--gold-light); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(40,10,20,.55);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 8px 40px rgba(196,57,107,.15);
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    animation: slideUp .25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal h3 {
+    font-family: 'Cinzel', serif;
+    font-size: .8rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .form-row { margin-bottom: 10px; }
+  .form-row label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .form-row input, .form-row select {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    padding: 9px 12px;
+  }
+  .form-row input:focus, .form-row select:focus { outline: none; border-color: var(--gold); }
+  .modal-btns { display: flex; gap: 8px; margin-top: 14px; }
+  .btn-cancel {
+    flex: 1;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: .08em;
+    padding: 9px;
+    cursor: pointer;
+  }
+  .btn-save {
+    flex: 2;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: .08em;
+    font-weight: 700;
+    padding: 9px;
+    cursor: pointer;
+  }
+
+  .gasto-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(180,60,90,.05);
+  }
+  .gasto-info { flex: 1; }
+  .gasto-desc {
+    font-family: 'Crimson Pro', serif;
+    font-size: .95rem;
+    font-weight: 600;
+  }
+  .gasto-meta {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .72rem;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+  .gasto-valor {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--red);
+  }
+  .gasto-del {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 4px;
+  }
+  .gasto-del:hover { color: var(--red); }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-dim);
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: .9rem;
+  }
+
+  /* ORÇAMENTO */
+  .orcamento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .orcamento-total-box {
+    background: var(--gold-dim);
+    border: 1px solid rgba(196,57,107,.25);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+  }
+  .orcamento-total-box .label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .orcamento-total-box .valor {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  .cat-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 16px rgba(180,60,90,.07);
+  }
+  .cat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #fde8ed, #fce8ef);
+  }
+  .cat-nome {
+    font-family: 'Cinzel', serif;
+    font-size: .75rem;
+    letter-spacing: .06em;
+    font-weight: 600;
+    color: var(--gold);
+  }
+  .cat-subtotal {
+    font-family: 'Crimson Pro', serif;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .cat-body { display: none; padding: 10px 14px 12px; }
+  .cat-block.open .cat-body { display: block; }
+  .cat-block.open .chevron { transform: rotate(180deg); }
+
+  .item-compra {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .item-compra:last-of-type { border-bottom: none; }
+  .item-compra-check {
+    width: 16px; height: 16px;
+    accent-color: var(--gold);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .item-compra-desc {
+    flex: 1;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem;
+    color: var(--text);
+  }
+  .item-compra-desc.comprado { text-decoration: line-through; color: var(--text-dim); }
+  .item-compra-val {
+    font-family: 'Crimson Pro', serif;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .item-compra-del {
+    background: none; border: none; color: var(--text-dim);
+    cursor: pointer; font-size: .85rem;
+  }
+  .item-compra-del:hover { color: var(--red); }
+
+  .add-item-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .add-item-row input {
+    flex: 2;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 7px 10px;
+  }
+  .add-item-row input:focus { outline: none; border-color: var(--gold); }
+  .add-item-row input.val-input { flex: 1; text-align: right; }
+  .add-item-btn {
+    background: var(--gold);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 7px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .add-cat-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .add-cat-row input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 7px 10px;
+  }
+  .add-cat-row input:focus { outline: none; border-color: var(--gold); }
+
+  /* RESUMO AVES */
+  .aves-resumo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 16px rgba(180,60,90,.07);
+  }
+  .aves-resumo-header {
+    background: linear-gradient(135deg, #fde8ed, #fce8ef);
+    padding: 10px 14px;
+    font-family: 'Cinzel', serif;
+    font-size: .75rem;
+    letter-spacing: .06em;
+    font-weight: 600;
+    color: var(--gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .aves-resumo-body { padding: 10px 14px; }
+  .aves-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .83rem;
+  }
+  .aves-row:last-child { border-bottom: none; }
+  .aves-row .av-nome { color: var(--text); }
+  .aves-row .av-qtd { color: var(--text-dim); font-size: .78rem; }
+  .aves-row .av-val { font-family: 'Crimson Pro', serif; font-weight: 600; color: var(--green); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: #fff;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    border-radius: 7px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: .08em;
+    box-shadow: 0 4px 20px rgba(196,57,107,.15);
+    padding: 11px 18px;
+    z-index: 300;
+    transition: transform .3s;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .spacer { height: 40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🕯 Obrigação de Agosto</h1>
+  <p>Bolhas de Luz — Controle Financeiro</p>
+</header>
+
+<!-- SALDO -->
+<div class="saldo-bar">
+  <div class="saldo-card entradas">
+    <div class="label">Entradas</div>
+    <div class="valor" id="totalEntradas">R$0</div>
+  </div>
+  <div class="saldo-card saidas">
+    <div class="label">Saídas</div>
+    <div class="valor" id="totalSaidas">R$0</div>
+  </div>
+  <div class="saldo-card saldo">
+    <div class="label">Saldo</div>
+    <div class="valor" id="saldoGeral">R$0</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('pessoas')">👥 Pessoas</button>
+  <button class="tab-btn" onclick="showTab('gastos')">💸 Gastos</button>
+  <button class="tab-btn" onclick="showTab('orcamento')">📋 Orçamento</button>
+  <button class="tab-btn" onclick="showTab('aves')">🐓 Aves</button>
+</div>
+
+<!-- TAB PESSOAS -->
+<div class="section active" id="tab-pessoas">
+  <p class="sec-title">Pagamentos por Pessoa</p>
+  <div class="pessoas-list" id="pessoasList"></div>
+</div>
+
+<!-- TAB GASTOS -->
+<div class="section" id="tab-gastos">
+  <button class="add-btn" onclick="openGastoModal()">+ REGISTRAR GASTO</button>
+  <p class="sec-title">Gastos Registrados</p>
+  <div id="gastosList"></div>
+</div>
+
+<!-- TAB ORÇAMENTO -->
+<div class="section" id="tab-orcamento">
+  <div class="orcamento-total-box">
+    <div class="label">Total Orçado</div>
+    <div class="valor" id="orcTotal">R$ 0,00</div>
+  </div>
+  <div class="orcamento-header">
+    <p class="sec-title" style="margin:0">Categorias</p>
+    <button class="add-btn" style="width:auto;margin:0;padding:7px 14px;font-size:10px" onclick="addCategoria()">+ CATEGORIA</button>
+  </div>
+  <div class="add-cat-row" id="addCatRow" style="display:none;margin-bottom:12px">
+    <input id="novaCatNome" placeholder="Nome da categoria..." />
+    <button class="add-item-btn" onclick="confirmarCategoria()">Criar</button>
+    <button class="btn-cancel" style="padding:7px 10px" onclick="document.getElementById('addCatRow').style.display='none'">✕</button>
+  </div>
+  <div id="categoriasList"></div>
+</div>
+
+<!-- TAB AVES -->
+<div class="section" id="tab-aves">
+  <div class="aves-resumo">
+    <div class="aves-resumo-header">
+      <span>Resumo de Aves</span>
+      <span id="avesTotalValor" style="font-family:'Crimson Pro',serif;font-size:1rem;color:var(--text)">R$ 0,00</span>
+    </div>
+    <div class="aves-resumo-body" id="avesResumoBody"></div>
+  </div>
+  <p class="sec-title">Preços unitários</p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:.85rem;display:flex;gap:20px">
+    <div>🐓 Galo: <strong>R$ 58,00</strong></div>
+    <div>🐔 Galinha: <strong>R$ 53,00</strong></div>
+  </div>
+  <div style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+    <p style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;color:var(--text-dim);margin-bottom:8px">TOTAIS</p>
+    <div id="avesTotaisDetalhes"></div>
+  </div>
+</div>
+
+<!-- MODAL GASTO -->
+<div class="modal-overlay" id="gastoModal">
+  <div class="modal">
+    <h3>Registrar Gasto</h3>
+    <div class="form-row">
+      <label>Descrição</label>
+      <input id="gastoDesc" placeholder="Ex: Velas brancas..." />
+    </div>
+    <div class="form-row">
+      <label>Valor (R$)</label>
+      <input id="gastoValor" type="number" step="0.01" placeholder="0,00" />
+    </div>
+    <div class="form-row">
+      <label>Categoria</label>
+      <input id="gastoCategoria" placeholder="Ex: Rituais, Transporte..." />
+    </div>
+    <div class="form-row">
+      <label>Data</label>
+      <input id="gastoData" type="date" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeGastoModal()">Cancelar</button>
+      <button class="btn-save" onclick="salvarGasto()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="spacer"></div>
+
+<script>
+// ─── DADOS ────────────────────────────────────────────────────────────────────
+const PRECO_GALO = 58;
+const PRECO_GALINHA = 53;
+
+// Valor da obrigação por pessoa (editável)
+const VALOR_OBRIGACAO = 100; // padrão, pode ser alterado individualmente
+
+const pessoasInicial = [
+  { nome: "Anna",      galos: 3, galinhas: 0 },
+  { nome: "Ness",      galos: 0, galinhas: 0 },
+  { nome: "Thali",     galos: 0, galinhas: 0 },
+  { nome: "Jaque",     galos: 2, galinhas: 3 },
+  { nome: "Tassi",     galos: 1, galinhas: 1 },
+  { nome: "Brenda",    galos: 1, galinhas: 1 },
+  { nome: "Anne",      galos: 0, galinhas: 0 },
+  { nome: "Vitória",   galos: 1, galinhas: 1 },
+  { nome: "Manu",      galos: 1, galinhas: 1 },
+  { nome: "Juliana",   galos: 1, galinhas: 1 },
+  { nome: "Gabi",      galos: 0, galinhas: 1 },
+  { nome: "Márcia",    galos: 0, galinhas: 0 },
+  { nome: "Nicole",    galos: 0, galinhas: 0 },
+  { nome: "Stephani",  galos: 0, galinhas: 0 },
+];
+
+// Estado: pagamentos[nome] = { obrigacaoPago: 0, avesPago: 0 }
+let pagamentos = JSON.parse(localStorage.getItem('bdl_pgtos') || 'null') || {};
+let gastos = JSON.parse(localStorage.getItem('bdl_gastos') || '[]');
+let categorias = JSON.parse(localStorage.getItem('bdl_cats') || 'null') || [
+  {
+    nome: "Umbanda",
+    itens: [{ desc: "Umbanda geral", val: 100, comprado: false }]
+  },
+  {
+    nome: "Padês",
+    itens: [{ desc: "Padês", val: 170, comprado: false }]
+  },
+  {
+    nome: "Elebó",
+    itens: [{ desc: "Elebó", val: 150, comprado: false }]
+  },
+  {
+    nome: "4pé Tranca Ruas",
+    itens: [{ desc: "4pé tranca ruas", val: 700, comprado: false }]
+  },
+  {
+    nome: "Tambor / Agê",
+    itens: [{ desc: "Tambor/Agê – 4 toques", val: 680, comprado: false }]
+  },
+  {
+    nome: "Transporte",
+    itens: [{ desc: "Uber – 4 toques", val: 240, comprado: false }]
+  },
+  {
+    nome: "Extras",
+    itens: [{ desc: "Extras diversos", val: 200, comprado: false }]
+  },
+];
+
+// Inicializa pagamentos ausentes
+pessoasInicial.forEach(p => {
+  if (!pagamentos[p.nome]) pagamentos[p.nome] = { obrigacaoPago: 0, avesPago: 0 };
+});
+
+function salvar() {
+  localStorage.setItem('bdl_pgtos', JSON.stringify(pagamentos));
+  localStorage.setItem('bdl_gastos', JSON.stringify(gastos));
+  localStorage.setItem('bdl_cats', JSON.stringify(categorias));
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function fmtBRL(v) {
+  return 'R$ ' + Number(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function fmtBRLshort(v) {
+  return 'R$' + Number(v).toFixed(0);
+}
+
+function calcValorAves(p) {
+  return p.galos * PRECO_GALO + p.galinhas * PRECO_GALINHA;
+}
+
+function getPago(nome) {
+  return pagamentos[nome] || { obrigacaoPago: 0, avesPago: 0 };
+}
+
+// ─── SALDO ────────────────────────────────────────────────────────────────────
+function atualizarSaldo() {
+  let entradas = 0;
+  pessoasInicial.forEach(p => {
+    const pg = getPago(p.nome);
+    entradas += pg.obrigacaoPago + pg.avesPago;
+  });
+  const saidas = gastos.reduce((s, g) => s + g.valor, 0);
+  document.getElementById('totalEntradas').textContent = fmtBRLshort(entradas);
+  document.getElementById('totalSaidas').textContent = fmtBRLshort(saidas);
+  const saldo = entradas - saidas;
+  const el = document.getElementById('saldoGeral');
+  el.textContent = fmtBRLshort(saldo);
+  el.style.color = saldo >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+// ─── PESSOAS ──────────────────────────────────────────────────────────────────
+function renderPessoas() {
+  const list = document.getElementById('pessoasList');
+  list.innerHTML = '';
+  pessoasInicial.forEach(p => {
+    const pg = getPago(p.nome);
+    const totalAves = calcValorAves(p);
+    const totalDeve = VALOR_OBRIGACAO + totalAves;
+    const totalPago = pg.obrigacaoPago + pg.avesPago;
+
+    let statusObr = pg.obrigacaoPago >= VALOR_OBRIGACAO ? 'ok' : (pg.obrigacaoPago > 0 ? 'pend' : 'nao');
+    let statusAves = totalAves === 0 ? 'ok' : (pg.avesPago >= totalAves ? 'ok' : (pg.avesPago > 0 ? 'pend' : 'nao'));
+
+    const card = document.createElement('div');
+    card.className = 'pessoa-card';
+    card.id = 'pc-' + p.nome;
+    card.innerHTML = `
+      <div class="pessoa-header" onclick="togglePessoa('${p.nome}')">
+        <span class="pessoa-nome">${p.nome}</span>
+        <div class="pessoa-status">
+          <span class="status-pill pill-${statusObr}">Obr</span>
+          ${totalAves > 0 ? `<span class="status-pill pill-${statusAves}">Aves</span>` : ''}
+        </div>
+        <span class="pessoa-total-mini">${totalPago > 0 ? fmtBRL(totalPago) : '—'}</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="pessoa-body">
+        <div class="pgto-group">
+          <div class="pgto-group-title">Obrigação (total: ${fmtBRL(VALOR_OBRIGACAO)})</div>
+          <div class="pgto-row">
+            <span class="pgto-label">Já pagou:</span>
+            <input class="pgto-input" type="number" step="0.01" value="${pg.obrigacaoPago}"
+              onchange="setPgto('${p.nome}','obrigacaoPago',this.value)" />
+          </div>
+          <div class="pgto-subtotal">${fmtBRL(pg.obrigacaoPago)} / ${fmtBRL(VALOR_OBRIGACAO)} ${pg.obrigacaoPago >= VALOR_OBRIGACAO ? '✅' : '— falta ' + fmtBRL(VALOR_OBRIGACAO - pg.obrigacaoPago)}</div>
+        </div>
+        ${totalAves > 0 ? `
+        <div class="pgto-group" style="margin-top:10px">
+          <div class="pgto-group-title">Aves — ${p.galos}🐓 galo${p.galos!==1?'s':''} + ${p.galinhas}🐔 galinha${p.galinhas!==1?'s':''} = ${fmtBRL(totalAves)}</div>
+          <div class="pgto-row">
+            <span class="pgto-label">Já pagou:</span>
+            <input class="pgto-input" type="number" step="0.01" value="${pg.avesPago}"
+              onchange="setPgto('${p.nome}','avesPago',this.value)" />
+          </div>
+          <div class="pgto-subtotal">${fmtBRL(pg.avesPago)} / ${fmtBRL(totalAves)} ${pg.avesPago >= totalAves ? '✅' : '— falta ' + fmtBRL(totalAves - pg.avesPago)}</div>
+        </div>` : `<div class="aves-info">Sem aves registradas</div>`}
+        <div class="aves-info" style="margin-top:10px">
+          Total: <span>${fmtBRL(totalPago)}</span> pagos de <span>${fmtBRL(totalDeve)}</span>
+          ${totalPago >= totalDeve ? ' ✅ Quitado!' : ' — falta ' + fmtBRL(totalDeve - totalPago)}
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function togglePessoa(nome) {
+  const card = document.getElementById('pc-' + nome);
+  card.classList.toggle('open');
+}
+
+function setPgto(nome, campo, val) {
+  if (!pagamentos[nome]) pagamentos[nome] = { obrigacaoPago: 0, avesPago: 0 };
+  pagamentos[nome][campo] = parseFloat(val) || 0;
+  salvar();
+  atualizarSaldo();
+  renderPessoas();
+  // reabre o card
+  setTimeout(() => {
+    const card = document.getElementById('pc-' + nome);
+    if (card) card.classList.add('open');
+  }, 10);
+}
+
+// ─── GASTOS ───────────────────────────────────────────────────────────────────
+function openGastoModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('gastoData').value = today;
+  document.getElementById('gastoDesc').value = '';
+  document.getElementById('gastoValor').value = '';
+  document.getElementById('gastoCategoria').value = '';
+  document.getElementById('gastoModal').classList.add('open');
+}
+function closeGastoModal() {
+  document.getElementById('gastoModal').classList.remove('open');
+}
+function salvarGasto() {
+  const desc = document.getElementById('gastoDesc').value.trim();
+  const val = parseFloat(document.getElementById('gastoValor').value);
+  const cat = document.getElementById('gastoCategoria').value.trim() || 'Geral';
+  const data = document.getElementById('gastoData').value;
+  if (!desc || !val) { showToast('Preencha descrição e valor'); return; }
+  gastos.push({ desc, valor: val, categoria: cat, data });
+  salvar();
+  closeGastoModal();
+  renderGastos();
+  atualizarSaldo();
+  showToast('Gasto registrado!');
+}
+function delGasto(i) {
+  if (!confirm('Excluir este gasto?')) return;
+  gastos.splice(i, 1);
+  salvar();
+  renderGastos();
+  atualizarSaldo();
+}
+
+function renderGastos() {
+  const list = document.getElementById('gastosList');
+  if (gastos.length === 0) {
+    list.innerHTML = '<div class="empty-state">Nenhum gasto registrado ainda</div>';
+    return;
+  }
+  // Agrupar por categoria
+  const grupos = {};
+  gastos.forEach((g, i) => {
+    if (!grupos[g.categoria]) grupos[g.categoria] = [];
+    grupos[g.categoria].push({ ...g, idx: i });
+  });
+  list.innerHTML = '';
+  Object.entries(grupos).forEach(([cat, itens]) => {
+    const catTotal = itens.reduce((s, g) => s + g.valor, 0);
+    const div = document.createElement('div');
+    div.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:10px 0 5px;display:flex;justify-content:space-between"><span>${cat}</span><span style="color:var(--red)">${fmtBRL(catTotal)}</span></div>`;
+    itens.forEach(g => {
+      const item = document.createElement('div');
+      item.className = 'gasto-item';
+      item.innerHTML = `
+        <div class="gasto-info">
+          <div class="gasto-desc">${g.desc}</div>
+          <div class="gasto-meta">${g.data || ''}</div>
+        </div>
+        <div class="gasto-valor">${fmtBRL(g.valor)}</div>
+        <button class="gasto-del" onclick="delGasto(${g.idx})">🗑</button>
+      `;
+      div.appendChild(item);
+    });
+    list.appendChild(div);
+  });
+}
+
+// ─── ORÇAMENTO ────────────────────────────────────────────────────────────────
+function renderOrcamento() {
+  const list = document.getElementById('categoriasList');
+  list.innerHTML = '';
+  let totalGeral = 0;
+  categorias.forEach((cat, ci) => {
+    const subtotal = cat.itens.reduce((s, i) => s + i.val, 0);
+    totalGeral += subtotal;
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+    block.id = 'cat-' + ci;
+    const itensHTML = cat.itens.map((item, ii) => `
+      <div class="item-compra">
+        <input type="checkbox" class="item-compra-check" ${item.comprado ? 'checked' : ''}
+          onchange="toggleComprado(${ci},${ii},this.checked)" />
+        <span class="item-compra-desc${item.comprado ? ' comprado' : ''}">${item.desc}</span>
+        <span class="item-compra-val">${fmtBRL(item.val)}</span>
+        <button class="item-compra-del" onclick="delItem(${ci},${ii})">🗑</button>
+      </div>
+    `).join('');
+    block.innerHTML = `
+      <div class="cat-header" onclick="toggleCat(${ci})">
+        <span class="cat-nome">${cat.nome}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="cat-subtotal">${fmtBRL(subtotal)}</span>
+          <span class="chevron" style="color:var(--text-dim)">▾</span>
+        </div>
+      </div>
+      <div class="cat-body">
+        ${itensHTML || '<div style="color:var(--text-dim);font-size:.8rem;padding:5px 0">Nenhum item</div>'}
+        <div class="add-item-row" style="margin-top:8px">
+          <input id="ni-desc-${ci}" placeholder="Item..." />
+          <input id="ni-val-${ci}" class="val-input" type="number" step="0.01" placeholder="0,00" />
+          <button class="add-item-btn" onclick="addItem(${ci})">+ ADD</button>
+        </div>
+        <button onclick="delCategoria(${ci})" style="margin-top:8px;background:none;border:none;color:var(--text-dim);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer">🗑 Excluir categoria</button>
+      </div>
+    `;
+    list.appendChild(block);
+  });
+  document.getElementById('orcTotal').textContent = fmtBRL(totalGeral);
+}
+
+function toggleCat(ci) {
+  document.getElementById('cat-' + ci).classList.toggle('open');
+}
+function addItem(ci) {
+  const desc = document.getElementById('ni-desc-' + ci).value.trim();
+  const val = parseFloat(document.getElementById('ni-val-' + ci).value) || 0;
+  if (!desc) return;
+  categorias[ci].itens.push({ desc, val, comprado: false });
+  salvar();
+  renderOrcamento();
+  setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
+}
+function delItem(ci, ii) {
+  categorias[ci].itens.splice(ii, 1);
+  salvar();
+  renderOrcamento();
+  setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
+}
+function toggleComprado(ci, ii, val) {
+  categorias[ci].itens[ii].comprado = val;
+  salvar();
+  renderOrcamento();
+  setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
+}
+function addCategoria() {
+  document.getElementById('addCatRow').style.display = 'flex';
+  document.getElementById('novaCatNome').focus();
+}
+function confirmarCategoria() {
+  const nome = document.getElementById('novaCatNome').value.trim();
+  if (!nome) return;
+  categorias.push({ nome, itens: [] });
+  salvar();
+  document.getElementById('addCatRow').style.display = 'none';
+  document.getElementById('novaCatNome').value = '';
+  renderOrcamento();
+}
+function delCategoria(ci) {
+  if (!confirm('Excluir categoria "' + categorias[ci].nome + '"?')) return;
+  categorias.splice(ci, 1);
+  salvar();
+  renderOrcamento();
+}
+
+// ─── AVES ─────────────────────────────────────────────────────────────────────
+function renderAves() {
+  const body = document.getElementById('avesResumoBody');
+  let totalGalos = 0, totalGalinhas = 0;
+  body.innerHTML = '';
+  pessoasInicial.forEach(p => {
+    if (p.galos === 0 && p.galinhas === 0) return;
+    totalGalos += p.galos;
+    totalGalinhas += p.galinhas;
+    const val = calcValorAves(p);
+    const pg = getPago(p.nome);
+    const row = document.createElement('div');
+    row.className = 'aves-row';
+    row.innerHTML = `
+      <span class="av-nome">${p.nome}</span>
+      <span class="av-qtd">${p.galos > 0 ? p.galos + '🐓' : ''}${p.galinhas > 0 ? ' ' + p.galinhas + '🐔' : ''}</span>
+      <span class="av-val">${fmtBRL(val)}</span>
+    `;
+    body.appendChild(row);
+  });
+
+  const totalVal = totalGalos * PRECO_GALO + totalGalinhas * PRECO_GALINHA;
+  document.getElementById('avesTotalValor').textContent = fmtBRL(totalVal);
+
+  const det = document.getElementById('avesTotaisDetalhes');
+  det.innerHTML = `
+    <div class="aves-row"><span>Total de galos</span><span class="av-qtd">${totalGalos} × R$${PRECO_GALO}</span><span class="av-val">${fmtBRL(totalGalos * PRECO_GALO)}</span></div>
+    <div class="aves-row"><span>Total de galinhas</span><span class="av-qtd">${totalGalinhas} × R$${PRECO_GALINHA}</span><span class="av-val">${fmtBRL(totalGalinhas * PRECO_GALINHA)}</span></div>
+    <div class="aves-row" style="font-weight:700"><span>TOTAL AVES</span><span></span><span class="av-val">${fmtBRL(totalVal)}</span></div>
+  `;
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderPessoas();
+renderGastos();
+renderOrcamento();
+renderAves();
+atualizarSaldo();
+</script>
+</body>
+</html>
