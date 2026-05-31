@@ -1066,18 +1066,32 @@ function renderOrcamento() {
     const block = document.createElement('div');
     block.className = 'cat-block';
     block.id = 'cat-' + ci;
-    const itensHTML = cat.itens.map((item, ii) => `
+    const nomeOpts = pessoasInicial.map(p => `<option value="${p.nome}" ${item.responsavel===p.nome?'selected':''}>${p.nome}</option>`).join('');
+    const itensHTML = cat.itens.map((item, ii) => {
+      const nomeOpts2 = pessoasInicial.map(p => `<option value="${p.nome}" ${item.responsavel===p.nome?'selected':''}>${p.nome}</option>`).join('');
+      return `
       <div class="item-compra${item.pago ? ' item-pago' : ''}">
         <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
           <input type="checkbox" class="item-compra-check" ${item.pago ? 'checked' : ''}
             onchange="togglePago(${ci},${ii},this.checked)" title="Marcar como pago (move para Gastos)" />
           <span style="font-size:8px;font-family:'Cinzel',serif;letter-spacing:.04em;color:${item.pago ? 'var(--green)' : 'var(--text-dim)'}">${item.pago ? '✓ PAGO' : 'PAGO'}</span>
         </div>
-        <span class="item-compra-desc${item.pago ? ' comprado' : ''}">${item.desc}${item.responsavel ? ` <span style="font-size:.65rem;background:var(--gold-dim);color:var(--gold);border-radius:10px;padding:1px 6px;margin-left:4px">${item.responsavel}</span>` : ''}${item.pago ? ` <span style="font-size:.65rem;background:var(--green-dim);color:var(--green);border-radius:10px;padding:1px 6px;margin-left:2px">→ Gastos</span>` : ''}</span>
-        <span class="item-compra-val" style="${item.pago ? 'color:var(--green)' : ''}">${fmtBRL(item.val)}</span>
-        <button class="item-compra-del" onclick="delItem(${ci},${ii})">🗑</button>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="item-compra-desc${item.pago ? ' comprado' : ''}" style="flex:1">${item.desc}${item.pago ? ` <span style="font-size:.65rem;background:var(--green-dim);color:var(--green);border-radius:10px;padding:1px 6px;margin-left:2px">→ Gastos</span>` : ''}</span>
+            <span class="item-compra-val" style="${item.pago ? 'color:var(--green)' : ''};flex-shrink:0">${fmtBRL(item.val)}</span>
+            <button class="item-compra-del" onclick="delItem(${ci},${ii})">🗑</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:4px">
+            <span style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap">Responsável:</span>
+            <select onchange="setResponsavel(${ci},${ii},this.value)" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:3px 6px">
+              <option value="">— Geral —</option>
+              ${nomeOpts2}
+            </select>
+          </div>
+        </div>
       </div>
-    `).join('');
+    `}).join('');
     block.innerHTML = `
       <div class="cat-header" onclick="toggleCat(${ci})">
         <span class="cat-nome">${cat.nome}</span>
@@ -1093,13 +1107,7 @@ function renderOrcamento() {
           <input id="ni-val-${ci}" class="val-input" type="number" step="0.01" placeholder="0,00" />
           <button class="add-item-btn" onclick="addItem(${ci})">+ ADD</button>
         </div>
-        <div style="margin-top:5px;display:flex;align-items:center;gap:6px">
-          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap">Responsável:</label>
-          <select id="ni-resp-${ci}" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:5px 8px">
-            <option value="">— Geral —</option>
-            ${pessoasInicial.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}
-          </select>
-        </div>
+
         <button onclick="delCategoria(${ci})" style="margin-top:8px;background:none;border:none;color:var(--text-dim);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer">🗑 Excluir categoria</button>
       </div>
     `;
@@ -1114,9 +1122,8 @@ function toggleCat(ci) {
 function addItem(ci) {
   const desc = document.getElementById('ni-desc-' + ci).value.trim();
   const val = parseFloat(document.getElementById('ni-val-' + ci).value) || 0;
-  const resp = document.getElementById('ni-resp-' + ci)?.value || '';
   if (!desc) return;
-  categorias[ci].itens.push({ desc, val, pago: false, responsavel: resp });
+  categorias[ci].itens.push({ desc, val, pago: false, responsavel: '' });
   salvar();
   renderOrcamento();
   setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
@@ -1156,6 +1163,19 @@ function togglePago(ci, ii, val) {
   renderOrcamento();
   setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
 }
+function setResponsavel(ci, ii, val) {
+  categorias[ci].itens[ii].responsavel = val;
+  salvar();
+  // If already pago, update the matching gasto too
+  if (categorias[ci].itens[ii].pago) {
+    const item = categorias[ci].itens[ii];
+    const g = gastos.find(g => g.fromOrcamento && g.desc === item.desc && g.valor === item.val && g.categoria === categorias[ci].nome);
+    if (g) { g.responsavel = val; salvar(); renderGastos(); }
+  }
+  renderOrcamento();
+  setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
+}
+
 function addCategoria() {
   document.getElementById('addCatRow').style.display = 'flex';
   document.getElementById('novaCatNome').focus();
