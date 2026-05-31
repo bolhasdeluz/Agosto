@@ -865,6 +865,15 @@ pessoasInicial.forEach(p => {
   if (!pagamentos[p.nome]) pagamentos[p.nome] = { obrigacaoPago: 0, avesPago: 0 };
 });
 
+// Migra itens antigos: comprado -> pago, garante campos obrigatórios
+categorias.forEach(cat => {
+  cat.itens.forEach(item => {
+    if (item.pago === undefined) item.pago = item.comprado || false;
+    if (item.responsavel === undefined) item.responsavel = '';
+    delete item.comprado;
+  });
+});
+
 function salvar() {
   localStorage.setItem('bdl_pgtos', JSON.stringify(pagamentos));
   localStorage.setItem('bdl_gastos', JSON.stringify(gastos));
@@ -1066,7 +1075,6 @@ function renderOrcamento() {
     const block = document.createElement('div');
     block.className = 'cat-block';
     block.id = 'cat-' + ci;
-    const nomeOpts = pessoasInicial.map(p => `<option value="${p.nome}" ${item.responsavel===p.nome?'selected':''}>${p.nome}</option>`).join('');
     const itensHTML = cat.itens.map((item, ii) => {
       const nomeOpts2 = pessoasInicial.map(p => `<option value="${p.nome}" ${item.responsavel===p.nome?'selected':''}>${p.nome}</option>`).join('');
       return `
