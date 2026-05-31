@@ -491,6 +491,10 @@
     cursor: pointer; font-size: .85rem;
   }
   .item-compra-del:hover { color: var(--red); }
+  .item-pago {
+    background: linear-gradient(135deg, #f0faf6, #e8f4f0);
+    border-bottom-color: #b8ddd4 !important;
+  }
 
   .add-item-row {
     display: flex;
@@ -737,6 +741,12 @@
       <label>Data</label>
       <input id="gastoData" type="date" />
     </div>
+    <div class="form-row">
+      <label>Responsável</label>
+      <select id="gastoResponsavel">
+        <option value="">— Ninguém / Geral —</option>
+      </select>
+    </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeGastoModal()">Cancelar</button>
       <button class="btn-save" onclick="salvarGasto()">Salvar</button>
@@ -974,6 +984,16 @@ function openGastoModal() {
   document.getElementById('gastoDesc').value = '';
   document.getElementById('gastoValor').value = '';
   document.getElementById('gastoCategoria').value = '';
+  document.getElementById('gastoResponsavel').value = '';
+  // Populate responsável select
+  const sel = document.getElementById('gastoResponsavel');
+  sel.innerHTML = '<option value="">— Ninguém / Geral —</option>';
+  pessoasInicial.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.nome;
+    opt.textContent = p.nome;
+    sel.appendChild(opt);
+  });
   document.getElementById('gastoModal').classList.add('open');
 }
 function closeGastoModal() {
@@ -984,8 +1004,9 @@ function salvarGasto() {
   const val = parseFloat(document.getElementById('gastoValor').value);
   const cat = document.getElementById('gastoCategoria').value.trim() || 'Geral';
   const data = document.getElementById('gastoData').value;
+  const responsavel = document.getElementById('gastoResponsavel').value;
   if (!desc || !val) { showToast('Preencha descrição e valor'); return; }
-  gastos.push({ desc, valor: val, categoria: cat, data });
+  gastos.push({ desc, valor: val, categoria: cat, data, responsavel });
   salvar();
   closeGastoModal();
   renderGastos();
@@ -1023,7 +1044,7 @@ function renderGastos() {
       item.innerHTML = `
         <div class="gasto-info">
           <div class="gasto-desc">${g.desc}</div>
-          <div class="gasto-meta">${g.data || ''}</div>
+          <div class="gasto-meta">${[g.data, g.responsavel].filter(Boolean).join(' · ')}</div>
         </div>
         <div class="gasto-valor">${fmtBRL(g.valor)}</div>
         <button class="gasto-del" onclick="delGasto(${g.idx})">🗑</button>
@@ -1046,11 +1067,14 @@ function renderOrcamento() {
     block.className = 'cat-block';
     block.id = 'cat-' + ci;
     const itensHTML = cat.itens.map((item, ii) => `
-      <div class="item-compra">
-        <input type="checkbox" class="item-compra-check" ${item.comprado ? 'checked' : ''}
-          onchange="toggleComprado(${ci},${ii},this.checked)" />
-        <span class="item-compra-desc${item.comprado ? ' comprado' : ''}">${item.desc}</span>
-        <span class="item-compra-val">${fmtBRL(item.val)}</span>
+      <div class="item-compra${item.pago ? ' item-pago' : ''}">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+          <input type="checkbox" class="item-compra-check" ${item.pago ? 'checked' : ''}
+            onchange="togglePago(${ci},${ii},this.checked)" title="Marcar como pago (move para Gastos)" />
+          <span style="font-size:8px;font-family:'Cinzel',serif;letter-spacing:.04em;color:${item.pago ? 'var(--green)' : 'var(--text-dim)'}">${item.pago ? '✓ PAGO' : 'PAGO'}</span>
+        </div>
+        <span class="item-compra-desc${item.pago ? ' comprado' : ''}">${item.desc}${item.responsavel ? ` <span style="font-size:.65rem;background:var(--gold-dim);color:var(--gold);border-radius:10px;padding:1px 6px;margin-left:4px">${item.responsavel}</span>` : ''}${item.pago ? ` <span style="font-size:.65rem;background:var(--green-dim);color:var(--green);border-radius:10px;padding:1px 6px;margin-left:2px">→ Gastos</span>` : ''}</span>
+        <span class="item-compra-val" style="${item.pago ? 'color:var(--green)' : ''}">${fmtBRL(item.val)}</span>
         <button class="item-compra-del" onclick="delItem(${ci},${ii})">🗑</button>
       </div>
     `).join('');
@@ -1064,10 +1088,17 @@ function renderOrcamento() {
       </div>
       <div class="cat-body">
         ${itensHTML || '<div style="color:var(--text-dim);font-size:.8rem;padding:5px 0">Nenhum item</div>'}
-        <div class="add-item-row" style="margin-top:8px">
-          <input id="ni-desc-${ci}" placeholder="Item..." />
+        <div class="add-item-row" style="margin-top:8px;flex-wrap:wrap">
+          <input id="ni-desc-${ci}" placeholder="Item..." style="flex:2;min-width:120px" />
           <input id="ni-val-${ci}" class="val-input" type="number" step="0.01" placeholder="0,00" />
           <button class="add-item-btn" onclick="addItem(${ci})">+ ADD</button>
+        </div>
+        <div style="margin-top:5px;display:flex;align-items:center;gap:6px">
+          <label style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap">Responsável:</label>
+          <select id="ni-resp-${ci}" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:5px 8px">
+            <option value="">— Geral —</option>
+            ${pessoasInicial.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}
+          </select>
         </div>
         <button onclick="delCategoria(${ci})" style="margin-top:8px;background:none;border:none;color:var(--text-dim);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer">🗑 Excluir categoria</button>
       </div>
@@ -1083,8 +1114,9 @@ function toggleCat(ci) {
 function addItem(ci) {
   const desc = document.getElementById('ni-desc-' + ci).value.trim();
   const val = parseFloat(document.getElementById('ni-val-' + ci).value) || 0;
+  const resp = document.getElementById('ni-resp-' + ci)?.value || '';
   if (!desc) return;
-  categorias[ci].itens.push({ desc, val, comprado: false });
+  categorias[ci].itens.push({ desc, val, pago: false, responsavel: resp });
   salvar();
   renderOrcamento();
   setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
@@ -1095,8 +1127,31 @@ function delItem(ci, ii) {
   renderOrcamento();
   setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
 }
-function toggleComprado(ci, ii, val) {
-  categorias[ci].itens[ii].comprado = val;
+function togglePago(ci, ii, val) {
+  const item = categorias[ci].itens[ii];
+  item.pago = val;
+  if (val) {
+    // Move to gastos
+    const today = new Date().toISOString().split('T')[0];
+    gastos.push({
+      desc: item.desc,
+      valor: item.val,
+      categoria: categorias[ci].nome,
+      data: today,
+      responsavel: item.responsavel || '',
+      fromOrcamento: true
+    });
+    atualizarSaldo();
+    renderGastos();
+    showToast('✓ Movido para Gastos!');
+  } else {
+    // Remove from gastos if it was added from orçamento (match by desc+val+cat)
+    const idx = gastos.findIndex(g => g.fromOrcamento && g.desc === item.desc && g.valor === item.val && g.categoria === categorias[ci].nome);
+    if (idx !== -1) gastos.splice(idx, 1);
+    atualizarSaldo();
+    renderGastos();
+    showToast('Removido dos Gastos');
+  }
   salvar();
   renderOrcamento();
   setTimeout(() => document.getElementById('cat-' + ci).classList.add('open'), 10);
